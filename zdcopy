@@ -1,0 +1,73 @@
+#!/bin/bash
+# zdcopy  port to postgres
+#
+#
+#
+
+## GET USER INPUT
+echo "What database would you like to extract?"
+pgdatabase=postgres
+#read pgdatabase
+export PGDATABASE=$pgdatabase
+
+echo "How many threads do you want to run:"
+threads=4
+#read threads
+echo "What is the destination format:/home/dir/ :"
+s3path=s3://zdata-temp
+
+#read $filepath
+AWS_ACCESS_KEY=AKIAIOGBRX6UZP3PCOTQ
+AWS_PRIVATE_KEY=0LcVXdCOYxiTNroEFg/G+i68AbyBBzaRdCROPfYv
+
+
+# Get the tables
+gpconnection="psql -o list.txt -t"
+echo $gpconnection
+
+#$gpconnection <<SQL
+#SELECT 'psql -c "COPY ' || table_schema ||'.'||table_name || ' TO ' || '''r_filepath' ||  'r_pgdatabase' ||'.'||table_schema ||'.'||table_name || '.csv''' ||' DELIMITER '';'' CSV HEADER;"'
+#FROM information_schema.tables t INNER JOIN information_schema.schemata s 
+#ON s.schema_name = t.table_schema 
+#WHERE t.table_schema NOT IN ('gp_toolkit','pg_catalog', 'information_schema', 'configuration')
+#AND t.table_type NOT IN ('VIEW');
+#SQL
+
+
+
+$gpconnection <<SQL
+SELECT 'psql -c "COPY ' || table_schema ||'.'||table_name || ' TO stdout ' ||' DELIMITER '';'' CSV HEADER;"' 
+|| ' | gzip | ./copy2aws s3path/pgdatabase.'||table_schema ||'.' ||table_name ||'.csv.gz'
+FROM information_schema.tables t INNER JOIN information_schema.schemata s 
+ON s.schema_name = t.table_schema 
+WHERE t.table_schema NOT IN ('gp_toolkit','pg_catalog', 'information_schema', 'configuration')
+AND t.table_type NOT IN ('VIEW');
+SQL
+
+echo $filepath
+# add path and database name to scripts
+sed -i "s|s3path|$s3path|g" list.txt
+sed -i "s|pgdatabase|$pgdatabase|g" list.txt
+
+parallel --progress -j4 < list.txt  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

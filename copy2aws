@@ -1,0 +1,4 @@
+unset LD_LIBRARY_PATH
+unset PYTHONHOME
+unset PYTHONPATH
+aws s3 cp - $1
