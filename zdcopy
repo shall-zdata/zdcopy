@@ -6,16 +6,13 @@
 
 ## GET USER INPUT
 echo "What database would you like to extract?"
-#pgdatabase=postgres
 read pgdatabase
 export PGDATABASE=$pgdatabase
 
 echo "How many threads do you want to run:"
-#threads=4
 read threads
 echo "What is the destination bucket example: s3://temp-bucket:"
 read s3path
-#s3path=s3://zdata-temp
 
 echo "What is your AWS API KEY"
 read aws_key
@@ -54,6 +51,7 @@ sed -i "s|pgdatabase|$pgdatabase|g" list.txt
 
 parallel --progress -j4 < list.txt  
 
+rm list.txt
 
 
 
