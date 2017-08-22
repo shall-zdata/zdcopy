@@ -49,9 +49,17 @@ echo $filepath
 sed -i "s|s3path|$s3path|g" list.txt
 sed -i "s|pgdatabase|$pgdatabase|g" list.txt
 
-parallel --progress -j4 < list.txt  
+for exclude in $(cat exclude_list.txt); do
+awk -v exclude="$exclude" '$0 !~ exclude {print $0}' list.txt > list2.txt
+mv list2.txt list.txt
+done
 
-rm list.txt
+parallel --progress -j$threads < list.txt  
+
+#rm list2.txt
+#rm list.txxt
+
+
 
 
 
